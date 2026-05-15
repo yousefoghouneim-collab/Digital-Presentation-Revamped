@@ -998,5 +998,11 @@ body{
   setInterval(animateCounters,200);
 })();
 </script>
+  <script>
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    if(e.key === 'F12') e.preventDefault();
+  });
+</script>
 </body>
 </html>
