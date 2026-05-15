@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="https://drive.google.com/uc?export=view&id=1y5gkjZ3R5D1EIsBCYRnVxengU22XB_N5">
+<title>Innovo · Construction Initiatives · 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700;900&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+:root{
+  --slate:#122023;
+  --deep:#080f10;
+  --aqua:#9EF3EE;
+  --blue:#208AAE;
+  --ink:#f0f4f5;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* The page is tall — scroll drives everything */
+html{ background:var(--deep); }
+body{
+  font-family:'Poppins',sans-serif;
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  /* height set by JS: sections × viewport */
+  overflow-x:hidden;
+}
+
+/* ── FIXED STAGE: always fills viewport ── */
+#stage{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+  background:var(--slate);
+}
+
+/* particle layer (Three.js WebGL) */
+#cv{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  pointer-events:none;
+  z-index:1;
+}
+
+/* vignette */
+.vig{
+  position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(8,15,16,0.85) 100%);
+}
+
+/* ── SECTION LAYER ── */
+.sec{
+  position:absolute;
+  inset:0;
+  width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  padding:80px 80px;
+  z-index:3;
+  will-change:transform,opacity;
+  transform:scale(0.96);
+  opacity:0;
+}
+
+/* ── typography ── */
+.eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:0.45em;text-transform:uppercase;
+  color:var(--aqua);
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:24px;
+}
+.el{width:28px;height:1px;background:rgba(158,243,238,0.45);}
+
+.mega{
+  font-weight:900;
+  font-size:clamp(64px,11vw,180px);
+  line-height:0.88;
+  letter-spacing:-0.05em;
+  text-transform:uppercase;
+  text-shadow:0 0 120px rgba(158,243,238,0.18);
+  will-change:transform,opacity;
+}
+.mega .aq{color:var(--aqua);}
+
+.h2{
+  font-weight:900;
+  font-size:clamp(32px,5vw,80px);
+  line-height:0.95;
+  letter-spacing:-0.04em;
+  text-transform:uppercase;
+  will-change:transform,opacity;
+}
+.h2 .aq{color:var(--aqua);}
+.h2 .bl{color:var(--blue);}
+
+/* ghost dept label behind mega */
+.ghost{
+  position:absolute;
+  bottom:-40px;left:60px;right:0;
+  font-weight:900;
+  font-size:clamp(120px,22vw,360px);
+  line-height:1;letter-spacing:-0.07em;text-transform:uppercase;
+  color:rgba(158,243,238,0.04);
+  pointer-events:none;
+  white-space:nowrap;overflow:hidden;
+  z-index:0;
+  will-change:transform;
+}
+
+.body{
+  font-size:clamp(14px,1.1vw,17px);
+  line-height:1.62;
+  color:rgba(240,244,245,0.7);
+  max-width:55ch;
+}
+
+.mono{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:0.3em;text-transform:uppercase;
+  color:rgba(255,255,255,0.4);
+}
+
+/* ── layout wrappers ── */
+.col-c{ /* centre */
+  display:flex;flex-direction:column;
+  align-items:center;text-align:center;
+  width:100%;max-width:1100px;
+  position:relative;
+}
+.col-l{ /* left */
+  display:flex;flex-direction:column;
+  align-items:flex-start;
+  width:100%;max-width:1400px;
+  position:relative;
+}
+/* New Alignment Classes */
+.sec.align-top { align-items: flex-start; }
+.sec.align-bottom { align-items: flex-end; }
+.sec.align-left { justify-content: flex-start; }
+.sec.align-right { justify-content: flex-end; }
+
+/* Font Size Utilities */
+.fs-xs { font-size: 0.7em !important; }
+.fs-sm { font-size: 0.85em !important; }
+.fs-lg { font-size: 1.25em !important; }
+.fs-xl { font-size: 1.5em !important; }
+
+.phrase {
+  display: inline-block;
+  will-change: opacity, transform;
+}
+
+/* initiative split */
+.ini{
+  display:grid;
+  grid-template-columns:1.1fr 1fr;
+  gap:60px;align-items:center;
+  width:100%;max-width:1380px;
+}
+.ini.r{grid-template-columns:1fr 1.1fr;}
+.ini.r .media{order:2;}.ini.r .body-side{order:1;}
+.media{
+  position:relative;aspect-ratio:16/10;
+  background:#071012;overflow:hidden;
+  border:1px solid rgba(158,243,238,0.1);
+  box-shadow:0 24px 70px -16px rgba(0,0,0,0.7);
+  will-change:transform,opacity;
+}
+.media iframe,.media img{
+  position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:cover;
+}
+.itag{
+  position:absolute;top:12px;left:12px;z-index:5;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:0.22em;text-transform:uppercase;
+  background:rgba(8,15,16,0.88);
+  border:1px solid rgba(158,243,238,0.28);
+  color:var(--aqua);padding:4px 10px;
+}
+.body-side{will-change:transform,opacity;}
+.inum{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:0.35em;text-transform:uppercase;
+  color:var(--aqua);margin-bottom:12px;
+}
+.ititle{
+  font-weight:800;
+  font-size:clamp(20px,2.4vw,38px);
+  line-height:1.05;letter-spacing:-0.025em;
+  margin-bottom:14px;
+}
+.idesc{
+  font-size:14px;line-height:1.6;
+  color:rgba(240,244,245,0.7);max-width:46ch;margin-bottom:18px;
+}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.met{border-top:1px solid rgba(255,255,255,0.07);padding-top:8px;}
+.mk{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.36);}
+.mv{font-size:13px;font-weight:600;color:var(--aqua);margin-top:2px;}
+
+/* grids */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px;width:100%;max-width:1300px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:36px;width:100%;max-width:1300px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:32px;width:100%;max-width:1400px;}
+.card{border-top:1px solid rgba(158,243,238,0.2);padding-top:20px;}
+.cid{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:var(--aqua);margin-bottom:10px;}
+.ctitle{font-weight:700;font-size:16px;margin-bottom:8px;text-transform:uppercase;letter-spacing:-0.01em;}
+.cbody{font-size:13px;line-height:1.5;color:rgba(240,244,245,0.62);}
+
+/* stat */
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px;width:100%;max-width:1200px;}
+.sc{border:1px solid rgba(158,243,238,0.12);background:rgba(18,32,35,0.5);padding:28px 24px;}
+.sn{font-size:clamp(32px,4vw,64px);font-weight:900;letter-spacing:-0.04em;color:var(--aqua);line-height:1;margin-bottom:8px;}
+.sl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:rgba(255,255,255,0.42);}
+
+/* big 3 */
+.b3{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:44px;width:100%;max-width:1100px;}
+.b3i{padding:36px;border-right:1px solid rgba(255,255,255,0.06);text-align:center;}
+.b3i:last-child{border-right:none;}
+.b3n{font-size:clamp(44px,6.5vw,100px);font-weight:900;letter-spacing:-0.05em;color:var(--aqua);line-height:1;text-shadow:0 0 60px rgba(158,243,238,0.25);}
+.b3l{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.42);margin-top:12px;}
+
+/* table */
+.vtbl{width:100%;max-width:1200px;margin-top:30px;border-collapse:collapse;}
+.vtbl th{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:rgba(255,255,255,0.32);padding:7px 14px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.07);}
+.vtbl td{padding:9px 14px;font-size:13px;color:rgba(240,244,245,0.76);border-bottom:1px solid rgba(255,255,255,0.04);}
+.vtbl td:first-child{font-weight:600;color:var(--ink);}
+.vtbl .aq{color:var(--aqua);font-weight:600;}
+
+/* timeline */
+.tl{margin-top:32px;padding-left:24px;position:relative;width:100%;max-width:880px;}
+.tl::before{content:"";position:absolute;left:5px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--aqua),transparent);}
+.tli{padding:0 0 24px 24px;position:relative;}
+.tli::before{content:"";position:absolute;left:-24px;top:5px;width:11px;height:11px;border-radius:50%;background:var(--slate);border:2px solid var(--aqua);}
+.tlh{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:var(--aqua);margin-bottom:3px;}
+.tlb{font-size:13px;line-height:1.5;color:rgba(240,244,245,0.72);}
+
+/* steps */
+.srow{display:grid;grid-template-columns:repeat(7,1fr);gap:0;margin-top:36px;position:relative;width:100%;max-width:1200px;}
+.srow::before{content:"";position:absolute;left:14px;right:14px;top:13px;height:1px;background:linear-gradient(to right,transparent,rgba(158,243,238,0.35),transparent);}
+.si{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 4px;}
+.sd{width:26px;height:26px;border-radius:50%;background:var(--deep);border:1px solid rgba(158,243,238,0.45);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--aqua);margin-bottom:10px;position:relative;z-index:2;}
+.sn2{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:4px;}
+.sd2{font-size:9px;color:rgba(240,244,245,0.45);line-height:1.3;}
+
+/* swot */
+.swg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:32px;width:100%;max-width:1100px;}
+.swc{border:1px solid rgba(158,243,238,0.14);background:rgba(32,138,174,0.07);padding:24px 28px;}
+.swc.a{background:rgba(45,157,191,0.09);}
+.swt{font-size:16px;font-weight:800;text-transform:uppercase;color:var(--aqua);margin-bottom:12px;letter-spacing:-0.01em;}
+.swl{list-style:none;}
+.swl li{font-size:13px;line-height:1.55;padding-left:11px;position:relative;color:rgba(240,244,245,0.73);}
+.swl li::before{content:"·";position:absolute;left:0;color:var(--aqua);font-weight:900;}
+
+/* pills */
+.pills{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px;}
+.pill{border:1px solid rgba(158,243,238,0.18);padding:9px 16px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,244,245,0.65);}
+
+/* scroll hint */
+.hint{
+  position:absolute;bottom:64px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:0.4em;text-transform:uppercase;
+  color:rgba(255,255,255,0.35);
+  pointer-events:none;
+}
+.harrow{width:1px;height:36px;background:linear-gradient(to bottom,rgba(158,243,238,0.5),transparent);animation:hp 2s ease infinite;}
+@keyframes hp{0%,100%{opacity:1;transform:scaleY(1);}50%{opacity:0.3;transform:scaleY(0.5);}}
+
+/* header */
+.hd{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:22px 44px;}
+.hdb{font-weight:700;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.85);}
+.hdr{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.38);display:flex;align-items:center;gap:18px;}
+.hpb{width:72px;height:1px;background:rgba(255,255,255,0.1);position:relative;overflow:hidden;}
+.hpf{position:absolute;left:0;top:0;height:100%;background:var(--aqua);width:0%;transition:width 0.3s ease;}
+
+/* footer */
+.ft{position:fixed;bottom:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:flex-end;padding:22px 44px;pointer-events:none;}
+.ftl,.ftr{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.28);}
+
+/* thanks */
+.turl{font-size:18px;font-weight:500;color:var(--aqua);margin-top:24px;}
+.tloc{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.4em;text-transform:uppercase;color:rgba(255,255,255,0.36);margin-top:36px;}
+
+/* video */
+.vf{width:100%;max-width:1060px;aspect-ratio:16/9;position:relative;border:1px solid rgba(158,243,238,0.14);background:#000;overflow:hidden;box-shadow:0 36px 90px -16px rgba(0,0,0,0.7);margin-top:28px;}
+.vf iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+
+/* loader */
+.ldr{position:fixed;inset:0;z-index:9999;background:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.9s,visibility 0.9s;}
+.ldr.gone{opacity:0;visibility:hidden;pointer-events:none;}
+.lw{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:16px;}
+.lb{width:200px;height:1px;background:rgba(255,255,255,0.07);position:relative;overflow:hidden;}
+.lb::after{content:"";position:absolute;left:0;top:0;height:100%;background:var(--aqua);animation:fill 1.8s ease forwards;}
+@keyframes fill{to{width:100%;}}
+.le{margin-top:22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:var(--aqua);border:1px solid var(--aqua);padding:13px 32px;background:none;cursor:pointer;opacity:0;animation:sho 0.4s ease forwards 2s;}
+@keyframes sho{to{opacity:1;}}
+.le:hover{background:var(--aqua);color:var(--deep);}
+
+/* ═══════════════════════════════════════════════
+   PREMIUM DESIGN SYSTEM — Creative Director Layer
+   ═══════════════════════════════════════════════ */
+
+/* Custom cursor */
+.cursor{position:fixed;width:20px;height:20px;border:1px solid rgba(158,243,238,0.5);border-radius:50%;pointer-events:none;z-index:99999;transition:transform 0.15s ease,opacity 0.3s;mix-blend-mode:difference;transform:translate(-50%,-50%);}
+.cursor-dot{position:fixed;width:4px;height:4px;background:var(--aqua);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform 0.08s;}
+.cursor.hover{transform:translate(-50%,-50%) scale(2.5);border-color:rgba(158,243,238,0.8);}
+
+/* Gradient shimmer on aqua text */
+.mega .aq, .h2 .aq{
+  background:linear-gradient(135deg, #9EF3EE 0%, #208AAE 40%, #9EF3EE 60%, #208AAE 100%);
+  background-size:300% 300%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:shimmer 6s ease infinite;
+}
+@keyframes shimmer{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+
+/* Glassmorphism initiative cards */
+.ini .body-side{
+  background:rgba(18,32,35,0.35);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(158,243,238,0.08);
+  padding:28px 32px;
+  position:relative;
+  overflow:hidden;
+}
+.ini .body-side::before{
+  content:'';position:absolute;inset:-1px;
+  background:linear-gradient(135deg,rgba(158,243,238,0.15),transparent 40%,transparent 60%,rgba(32,138,174,0.1));
+  pointer-events:none;z-index:0;
+}
+
+/* Glass stat cards */
+.sc{
+  border:1px solid rgba(158,243,238,0.12);
+  background:rgba(18,32,35,0.4) !important;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  position:relative;overflow:hidden;
+}
+.sc::after{
+  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:conic-gradient(from 180deg,transparent,rgba(158,243,238,0.04),transparent 30%);
+  animation:rotate 8s linear infinite;
+}
+@keyframes rotate{to{transform:rotate(360deg);}}
+
+/* Pulsing glow on big numbers */
+.sn, .b3n{
+  text-shadow:0 0 40px rgba(158,243,238,0.3),0 0 80px rgba(158,243,238,0.1);
+  animation:numglow 3s ease-in-out infinite alternate;
+}
+@keyframes numglow{from{text-shadow:0 0 40px rgba(158,243,238,0.2),0 0 80px rgba(158,243,238,0.05);}to{text-shadow:0 0 60px rgba(158,243,238,0.45),0 0 120px rgba(158,243,238,0.15);}}
+
+/* Enhanced media cards with hover tilt */
+.media{
+  transition:transform 0.6s cubic-bezier(0.23,1,0.32,1),box-shadow 0.6s ease;
+  transform-style:preserve-3d;
+}
+.media:hover{
+  box-shadow:0 32px 80px -12px rgba(158,243,238,0.15),0 0 1px rgba(158,243,238,0.3);
+}
+
+/* Animated gradient border on department ghost text */
+.ghost{
+  background:linear-gradient(90deg,rgba(158,243,238,0.06),rgba(32,138,174,0.03),rgba(158,243,238,0.06));
+  background-size:200% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:ghostslide 12s linear infinite;
+}
+@keyframes ghostslide{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* Enhanced pills with hover */
+.pill{transition:all 0.3s ease;}
+.pill:hover{border-color:rgba(158,243,238,0.5);color:var(--aqua);background:rgba(158,243,238,0.05);}
+
+/* Premium loader */
+.ldr{backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);}
+.lw{animation:fadeUp 1s ease 0.3s both;}
+.lb{animation:fadeUp 1s ease 0.6s both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* SWOT cards glass */
+.swc{
+  background:rgba(18,32,35,0.35) !important;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(158,243,238,0.1);
+  transition:border-color 0.4s ease;
+}
+.swc:hover{border-color:rgba(158,243,238,0.3);}
+
+/* Metric values glow */
+.mv{text-shadow:0 0 20px rgba(158,243,238,0.2);}
+
+/* Enhanced header with glass */
+.hd{
+  background:rgba(8,15,16,0.5);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+
+/* Enhanced footer glass */
+.ft{
+  background:rgba(8,15,16,0.3);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid rgba(255,255,255,0.03);
+}
+
+/* Video frame premium glow */
+.vf{
+  border:1px solid rgba(158,243,238,0.1);
+  box-shadow:0 36px 90px -16px rgba(0,0,0,0.7),0 0 0 1px rgba(158,243,238,0.05),inset 0 0 60px rgba(0,0,0,0.3);
+}
+
+/* Table row hover */
+.vtbl tr{transition:background 0.3s ease;}
+.vtbl tbody tr:hover{background:rgba(158,243,238,0.04);}
+
+/* Step dots glow */
+.sd{box-shadow:0 0 12px rgba(158,243,238,0.2);transition:box-shadow 0.3s;}
+
+/* Timeline dot glow */
+.tli::before{box-shadow:0 0 10px rgba(158,243,238,0.3);}
+
+/* Counter animation class */
+.counter{display:inline-block;}
+
+/* Ambient glow orbs behind stage */
+.amb-orb{
+  position:absolute;border-radius:50%;
+  filter:blur(80px);opacity:0.04;
+  pointer-events:none;z-index:0;
+  animation:orbFloat 20s ease-in-out infinite alternate;
+}
+.amb-orb.a1{width:500px;height:500px;background:var(--aqua);top:-10%;left:-5%;animation-delay:0s;}
+.amb-orb.a2{width:400px;height:400px;background:var(--blue);bottom:-15%;right:-8%;animation-delay:-7s;}
+.amb-orb.a3{width:350px;height:350px;background:var(--aqua);top:40%;right:-12%;animation-delay:-14s;}
+@keyframes orbFloat{
+  0%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(30px,-40px) scale(1.15);}
+  100%{transform:translate(-20px,30px) scale(0.9);}
+}
+</style>
+</head>
+<body>
+
+<!-- AUDIO -->
+<audio id="bgMusic" loop preload="auto">
+  <source src="https://drive.google.com/uc?export=download&id=1wnMwqrZd8TyFJVzpwodWrBqYAHrLJBg6" type="audio/mpeg">
+</audio>
+
+<!-- LOADER -->
+<div class="ldr" id="ldr">
+  <img src="https://drive.google.com/uc?export=view&id=1y5gkjZ3R5D1EIsBCYRnVxengU22XB_N5" alt="Innovo" style="height:48px;margin-bottom:24px;filter:brightness(1.2);">
+  <div class="lw">DIGITAL STRATEGY · 2026</div>
+  <div class="lb"></div>
+  <div style="display:flex;gap:16px;margin-top:22px;">
+    <button class="le" id="ebMusic" style="opacity:0;animation:sho .4s ease forwards 2s;">ENTER WITH MUSIC</button>
+    <button class="le" id="eb" style="opacity:0;animation:sho .4s ease forwards 2.2s;border-color:rgba(158,243,238,.4);color:rgba(158,243,238,.6);">ENTER WITHOUT MUSIC</button>
+  </div>
+</div>
+
+<!-- FIXED VISUAL STAGE -->
+<div id="stage">
+  <div class="amb-orb a1"></div>
+  <div class="amb-orb a2"></div>
+  <div class="amb-orb a3"></div>
+  <canvas id="cv"></canvas>
+  <div class="vig"></div>
+
+  <!-- Every .sec lives here, driven by scroll position in rAF -->
+
+  <!-- 00 COVER -->
+  <div class="sec" id="s0" data-label="Cover">
+    <div class="col-c">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">DIGITAL STRATEGY · 2026</span><span class="el"></span></div>
+      <div class="mega"><span class="phrase">Construction</span><br/><span class="phrase aq">Initiatives</span></div>
+      <div class="mono" style="margin-top:28px;"><span class="phrase">INNOVO GROUP · UAE BUILD</span></div>
+    </div>
+    <div class="hint"><span>SCROLL</span><div class="harrow"></div></div>
+  </div>
+
+  <!-- 01 INTRO VIDEO -->
+  <div class="sec" id="s1" data-label="Intro Film">
+    <div class="col-c">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">01 — Innovation is Innovo</span><span class="el"></span></div>
+      <div class="h2 phrase">The Film</div>
+      <div class="vf"><iframe src="https://drive.google.com/file/d/1bgzQWHVGu8yj4fu8wxuppt4doyLcFuzo/preview" allow="autoplay;encrypted-media;fullscreen" allowfullscreen></iframe></div>
+    </div>
+  </div>
+
+  <!-- 02 STRATEGY -->
+  <div class="sec" id="s2" data-label="Strategy">
+    <div class="col-l">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">02 — Strategy</span></div>
+      <div class="h2"><span class="phrase"><span class="aq">Why</span> · What · How</span></div>
+      <div class="g3">
+        <div class="card"><div class="cid">WHY?</div><div class="ctitle">Better built tomorrow</div><div class="cbody">Innovating for a better built tomorrow: Building Ideas into Reality — turning every Innovo project into a proving ground.</div></div>
+        <div class="card"><div class="cid">WHAT?</div><div class="ctitle">End-to-end digital</div><div class="cbody">A connected initiative tracker across every department — each backed by hard ROI in time, cost, safety and carbon.</div></div>
+        <div class="card"><div class="cid">HOW?</div><div class="ctitle">Seven-step adoption loop</div><div class="cbody">Define → Scope → Trial → Refine → Go/No-go → Scale → Embed. ExCo-gated at every stage.</div></div>
+      </div>
+      <div class="srow">
+        <div class="si"><div class="sd">01</div><div class="sn2">Define</div><div class="sd2">Identify the problem</div></div>
+        <div class="si"><div class="sd">02</div><div class="sn2">Scope</div><div class="sd2">Outline solution</div></div>
+        <div class="si"><div class="sd">03</div><div class="sn2">Trial</div><div class="sd2">Test inside Innovo</div></div>
+        <div class="si"><div class="sd">04</div><div class="sn2">Refine</div><div class="sd2">Iterate &amp; improve</div></div>
+        <div class="si"><div class="sd">05</div><div class="sn2">Go/No-go</div><div class="sd2">ExCo approval</div></div>
+        <div class="si"><div class="sd">06</div><div class="sn2">Scale</div><div class="sd2">Roll out</div></div>
+        <div class="si"><div class="sd">07</div><div class="sn2">Embed</div><div class="sd2">Train &amp; onboard</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 THREE PILLARS -->
+  <div class="sec" id="s3" data-label="Three Pillars">
+    <div class="col-l">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">03 — Three Pillars</span></div>
+      <div class="h2"><span class="phrase">How we <span class="aq">build</span> it.</span></div>
+      <div class="g3">
+        <div class="card"><div class="cid">PILLAR 01 · PROCESS</div><div class="ctitle">Business Understanding</div><div class="cbody">Adding value through deep business understanding — embedding every solution into how Innovo actually works on site.</div></div>
+        <div class="card"><div class="cid">PILLAR 02 · PLATFORM</div><div class="ctitle">Unified Digital Innovation</div><div class="cbody">Empowering teams through unified digital innovation — one connected stack instead of disconnected tools.</div></div>
+        <div class="card"><div class="cid">PILLAR 03 · FORMA + AI</div><div class="ctitle">Autodesk + Automation</div><div class="cbody">Expanding Autodesk Forma with AI and automation — turning design intent into measurable delivery outcomes.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 VALUE TRACKER TABLE -->
+  <div class="sec" id="s4" data-label="Value Tracker">
+    <div class="col-l">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">04 — Value Tracker</span></div>
+      <div class="h2 phrase">What it's <span class="aq">worth</span>.</div>
+      <table class="vtbl phrase">
+        <thead><tr><th>INITIATIVE</th><th>COST SAVING / YR</th><th>TIME SAVED / YR</th></tr></thead>
+        <tbody>
+          <tr><td>Digital Reporting Platform</td><td class="aq">AED 700,000</td><td class="aq">5,500 hrs</td></tr>
+          <tr><td>AI Schedule Analysis</td><td class="aq">AED 650,000+</td><td class="aq">4,800 hrs</td></tr>
+          <tr><td>Engineering Automation</td><td class="aq">AED 1,100,000</td><td class="aq">2,600 hrs</td></tr>
+          <tr><td>AI Safety Monitoring</td><td class="aq">AED 800,000</td><td class="aq">240 hrs</td></tr>
+          <tr><td>QMS Digital Platform</td><td class="aq">AED 2,400,000</td><td class="aq">1,600 hrs</td></tr>
+          <tr><td>Formwork Cost &amp; Hiring</td><td class="aq">AED 700,000</td><td class="aq">13,260 hrs</td></tr>
+          <tr><td>Handover Digital Platform</td><td class="aq">AED 270,000</td><td class="aq">480 hrs</td></tr>
+          <tr><td>Carbon / iEnergy</td><td class="aq">AED 166,000</td><td class="aq">80 CO₂ kg</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 05 BIG 3 IMPACT -->
+  <div class="sec" id="s5" data-label="Annual Impact">
+    <div class="col-c">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">05 — Annual Impact</span><span class="el"></span></div>
+      <div class="h2 phrase">The <span class="aq">big</span> three.</div>
+      <div class="b3">
+        <div class="b3i phrase"><div class="b3n">AED<br/>10M+</div><div class="b3l">Saved by re-work reduction</div></div>
+        <div class="b3i phrase"><div class="b3n">12,400</div><div class="b3l">CO₂ kg offset / year</div></div>
+        <div class="b3i phrase"><div class="b3n">36</div><div class="b3l">Injuries prevented / year</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 HIGHLIGHTS -->
+  <div class="sec" id="s6" data-label="Highlights">
+    <div class="col-l">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">06 — Six Months In</span></div>
+      <div class="h2 phrase fs-xl"><span class="aq">120+</span> solutions reviewed.</div>
+      <div class="sg">
+        <div class="sc phrase"><div class="sn">120+</div><div class="sl">Reviewed Solutions</div></div>
+        <div class="sc phrase"><div class="sn">9</div><div class="sl">Innovo Focus Areas</div></div>
+        <div class="sc phrase"><div class="sn">14</div><div class="sl">Potential Spin-offs</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 FOCUS + PARTNERS -->
+  <div class="sec" id="s7" data-label="Focus Areas">
+    <div class="col-l">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">07 — Focus Areas &amp; Partnerships</span></div>
+      <div class="h2 phrase fs-lg">Where we <span class="aq">play</span>.</div>
+      <div class="g3 phrase">
+        <div class="card"><div class="cid">01</div><div class="ctitle">Reducing Labour Dependency</div><div class="cbody">Robotics, automation and AI to take routine load off skilled trades.</div></div>
+        <div class="card"><div class="cid">02</div><div class="ctitle">Data Intelligence &amp; Forecasting</div><div class="cbody">Early-warning systems for cost, time, safety and quality across every project.</div></div>
+        <div class="card"><div class="cid">03</div><div class="ctitle">Real-time Site Operations</div><div class="cbody">From manpower to deliveries — visibility and control across all active sites.</div></div>
+      </div>
+      <div class="pills phrase"><div class="pill">Stanford University</div><div class="pill">Heriot-Watt University</div><div class="pill">Dubai Municipality</div><div class="pill">Dubai Founders HQ</div><div class="pill">Brick &amp; Mortar Ventures</div><div class="pill">Bouygues Construction</div></div>
+    </div>
+  </div>
+
+  <!-- 08 TIMELINE -->
+  <div class="sec" id="s8" data-label="Timeline">
+    <div class="col-l">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">08 — Our Nine-Point Plan</span></div>
+      <div class="h2 phrase fs-lg">The path <span class="aq">so far</span>.</div>
+      <div class="tl phrase">
+        <div class="tli"><div class="tlh">Step 01</div><div class="tlb">Meeting with 68 employees and visited 5 projects.</div></div>
+        <div class="tli"><div class="tlh">Step 02</div><div class="tlb">Engagement with Heads of UAE Build.</div></div>
+        <div class="tli"><div class="tlh">Step 03</div><div class="tlb">Consolidated initiatives with Heads of Departments.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEPT TITLE: SAFETY -->
+  <div class="sec" id="s9" data-label="Safety" data-dept="1">
+    <div class="col-c" style="position:relative;overflow:hidden;">
+      <div class="ghost">SAFETY</div>
+      <div class="eyebrow"><span class="el"></span><span class="phrase">Department 01 / 11</span><span class="el"></span></div>
+      <div class="mega"><span class="phrase">Safety</span></div>
+      <div class="mono" style="margin-top:18px;"><span class="phrase">Gareth Main · Group HSE Director</span></div>
+    </div>
+  </div>
+
+  <div class="sec" id="s10" data-label="AI Safety Monitoring">
+    <div class="ini"><div class="media"><span class="itag">Safety · 01</span><iframe src="https://drive.google.com/file/d/1QgjC_lIuEUW7LMiPoO4dwjxO0Qgc2plZ/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum"><span class="phrase">01 / Safety</span></div><div class="ititle"><span class="phrase">AI Safety Monitoring</span></div><div class="idesc"><span class="phrase">Computer-vision monitoring across 8M+ man-hours per month —</span> <span class="phrase">flagging hazards, PPE breaches and unsafe zones in real time.</span></div><div class="metrics"><div class="met"><div class="mk">Cost saving</div><div class="mv">AED 800,000 / yr</div></div><div class="met"><div class="mk">Time</div><div class="mv">240 hrs / yr</div></div><div class="met"><div class="mk">Safety</div><div class="mv">Injuries prevented</div></div><div class="met"><div class="mk">ESG</div><div class="mv">Carbon offset</div></div></div></div></div>
+  </div>
+  <div class="sec" id="s11" data-label="Immersive Training">
+    <div class="ini r"><div class="media"><span class="itag">Safety · 02</span><iframe src="https://drive.google.com/file/d/1Hks7yLCzjUWwGszWs08fhvO_Xgk-HHw6/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum phrase">02 / Safety</div><div class="ititle phrase">Immersive Training Centre</div><div class="idesc phrase">VR-driven HSE training — turning incident learnings into repeatable, scenario-based training across the workforce.</div><div class="metrics phrase"><div class="met"><div class="mk">Cost saving</div><div class="mv">AED 1,400,000 / yr</div></div></div></div></div>
+  </div>
+  <div class="sec" id="s12" data-label="Digital Safety Induction">
+    <div class="ini"><div class="media"><span class="itag">Safety · 03</span><iframe src="https://drive.google.com/file/d/1pDAqnMoWZgluoBbkM59yQh5byxpZKBd6/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">03 / Safety</div><div class="ititle">Digital Safety Induction</div><div class="idesc">Mobile-first multilingual onboarding for every new worker — consistent safety message, instant traceability, zero paperwork.</div></div></div>
+  </div>
+  <div class="sec" id="s13" data-label="Digital Permit-to-Work">
+    <div class="ini r"><div class="media"><span class="itag">Safety · 04</span><iframe src="https://drive.google.com/file/d/1b12o49p2ErrD-0jytNDkv0fzvpV6q2CD/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">04 / Safety</div><div class="ititle">Digital Permit-to-Work</div><div class="idesc">Permit issuance, approval and lock-out moved fully online — auditable, faster, tied to live site dashboards.</div></div></div>
+  </div>
+  <div class="sec" id="s14" data-label="Digital Notice Boards">
+    <div class="ini"><div class="media"><span class="itag">Safety · 05</span><iframe src="https://drive.google.com/file/d/1cLnMokKOwjpf7OlOrVx3vid80novIrTI/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">05 / Safety</div><div class="ititle">Digital Notice Boards</div><div class="idesc">Multilingual safety boards across every site — emergency procedures, contacts and project information, updated instantly.</div></div></div>
+  </div>
+
+  <!-- DEPT: PROCUREMENT -->
+  <div class="sec" id="s15" data-label="Procurement" data-dept="2">
+    <div class="col-c" style="position:relative;overflow:hidden;"><div class="ghost">PROCURE</div><div class="eyebrow"><span class="el"></span><span class="phrase">Department 02 / 11</span><span class="el"></span></div><div class="mega"><span class="phrase">Procurement</span></div><div class="mono" style="margin-top:18px;"><span class="phrase">Joby Abraham · Procurement Director</span></div></div>
+  </div>
+  <div class="sec" id="s16" data-label="MHO">
+    <div class="ini r"><div class="media"><span class="itag">Procurement · 01</span><iframe src="https://drive.google.com/file/d/1Qg8XLru0TyIuvww5JwUw1wgwSbMmBFtm/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">01 / Procurement</div><div class="ititle">MHO — AI Purchase Order Assistant</div><div class="idesc">Automated price comparison · itemised price visibility · unified platform from enquiry to subcontract · Oracle integration.</div><div class="metrics"><div class="met"><div class="mk">Rollout</div><div class="mv">~3 months</div></div></div></div></div>
+  </div>
+  <div class="sec" id="s17" data-label="MetriQom">
+    <div class="ini"><div class="media"><span class="itag">Procurement · 02</span><img src="https://lh3.googleusercontent.com/d/1X3irlHqN1APFlzrXoJjkNAuyPu5m5k26" alt="MetriQom"/></div><div class="body-side"><div class="inum">02 / Procurement</div><div class="ititle">MetriQom — AI Vendor Management</div><div class="idesc">Subcontractor pre-qualification and performance history in one platform — supplier evaluation, grading and project references at the buyer's fingertips.</div></div></div>
+  </div>
+
+  <!-- DEPT: ESTIMATING -->
+  <div class="sec" id="s18" data-label="Estimating &amp; Tendering" data-dept="3">
+    <div class="col-c" style="position:relative;overflow:hidden;"><div class="ghost">TENDER</div><div class="eyebrow"><span class="el"></span><span class="phrase">Department 03 / 11</span><span class="el"></span></div><div class="mega"><span class="phrase">Estimating</span><br/><span class="aq phrase">&amp; Tendering</span></div><div class="mono" style="margin-top:18px;"><span class="phrase">Rimon Jan · Tendering Director</span></div></div>
+  </div>
+  <div class="sec" id="s19" data-label="Agentic AI">
+    <div class="ini r"><div class="media"><span class="itag">Estimating · 01</span><iframe src="https://drive.google.com/file/d/1dPCaOGfaQfnVHzmxZgKvVhxn7uA5rjOs/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">01 / Estimating</div><div class="ititle">Agentic AI Initiative</div><div class="idesc">Tender analysis, document drafting, BOQ review and supplier evaluation — 80–120 hour bids cut dramatically, with zero hallucinations.</div></div></div>
+  </div>
+  <div class="sec" id="s20" data-label="Automated RFP">
+    <div class="ini"><div class="media"><span class="itag">Estimating · 02</span><iframe src="https://drive.google.com/file/d/17-fCFWbMitB8Igxw1m3L1ouIqEiK4Bpb/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">02 / Estimating</div><div class="ititle">Automated RFP Process</div><div class="idesc">From inbound RFP to structured response — automated extraction, routing and drafting at scale.</div></div></div>
+  </div>
+
+  <!-- DEPT: PLANNING -->
+  <div class="sec" id="s21" data-label="Planning" data-dept="4">
+    <div class="col-c" style="position:relative;overflow:hidden;"><div class="ghost">PLANNING</div><div class="eyebrow"><span class="el"></span><span class="phrase">Department 04 / 11</span><span class="el"></span></div><div class="mega phrase">Planning</div><div class="mono" style="margin-top:18px;"><span class="phrase">Hany Hataba · Planning Director</span></div></div>
+  </div>
+  <div class="sec" id="s22" data-label="Digital Reporting Platform">
+    <div class="ini r"><div class="media"><span class="itag">Planning · 01</span><img src="https://lh3.googleusercontent.com/d/1Rt7eCoQFVEDB1xa-xLaPAkVqzdhrI-Qt" alt="Digital Reporting"/></div><div class="body-side"><div class="inum phrase">01 / Planning</div><div class="ititle phrase fs-lg">Digital Reporting Platform</div><div class="idesc phrase">Digitally transforming executive and project records into an interactive reporting hub — one screen, every project.</div><div class="metrics phrase"><div class="met"><div class="mk">Cost saving</div><div class="mv">AED 700,000 / yr</div></div><div class="met"><div class="mk">Time</div><div class="mv">5,500 hrs / yr</div></div><div class="met"><div class="mk">Live</div><div class="mv">Feb 2026</div></div></div></div></div>
+  </div>
+  <div class="sec" id="s23" data-label="Mobile App for Progress">
+    <div class="ini"><div class="media"><span class="itag">Planning · 02</span><iframe src="https://drive.google.com/file/d/13eZsnOYCtK2B6-v3H1dcnrjBCsLlz1R6/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">02 / Planning</div><div class="ititle">Mobile App for Progress</div><div class="idesc">Real-time progress updates from site — capture once, sync to the master schedule.</div><div class="metrics"><div class="met"><div class="mk">Cost saving</div><div class="mv">AED 40,000 / yr</div></div><div class="met"><div class="mk">Time</div><div class="mv">300 hrs / yr</div></div></div></div></div>
+  </div>
+  <div class="sec" id="s24" data-label="AI Agents for Planning">
+    <div class="ini r"><div class="media"><span class="itag">Planning · 04</span><iframe src="https://drive.google.com/file/d/128zXpCtYYAWV6-PHckPiJcalzg-RcXMo/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">04 / Planning</div><div class="ititle">AI Agents for Planning</div><div class="idesc">AI agents designed for planners to streamline tasks and improve operational efficiency.</div><div class="metrics"><div class="met"><div class="mk">Cost saving</div><div class="mv">AED 270,000 / yr</div></div><div class="met"><div class="mk">Time</div><div class="mv">1,600 hrs / yr</div></div></div></div></div>
+  </div>
+
+  <!-- DEPT: OPERATIONS -->
+  <div class="sec" id="s25" data-label="Operations" data-dept="5">
+    <div class="col-c" style="position:relative;overflow:hidden;"><div class="ghost">OPS</div><div class="eyebrow"><span class="el"></span><span class="phrase">Department 05 / 11</span><span class="el"></span></div><div class="mega phrase">Operations</div><div class="mono" style="margin-top:18px;"><span class="phrase">Amir Boshra · Bassem Ayaad · Moheb Mounir</span></div></div>
+  </div>
+  <div class="sec" id="s26" data-label="InnoMemo">
+    <div class="ini"><div class="media"><span class="itag">Operations · 01</span><iframe src="https://drive.google.com/file/d/1BT2mZ9qMuNnQ-WNT7E1XwzyWCUppiB-K/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">01 / Operations</div><div class="ititle">Digital Memo (InnoMemo)</div><div class="idesc">AI-powered workflow transforming how subcontractor memos are created, tracked and approved across active projects.</div><div class="metrics"><div class="met"><div class="mk">Live</div><div class="mv">Dec 2025</div></div></div></div></div>
+  </div>
+  <div class="sec" id="s27" data-label="Smart Tagging">
+    <div class="ini r"><div class="media"><span class="itag">Operations · 03</span><iframe src="https://drive.google.com/file/d/1cZ8pAxsfaBqaguN4rCdRrnNS731AP4I8/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">03 / Operations</div><div class="ititle">Smart Tagging</div><div class="idesc">Unit-level digital passports — every component traceable from manufacture through to handover.</div></div></div>
+  </div>
+  <div class="sec" id="s28" data-label="Logistics &amp; Deliveries">
+    <div class="ini"><div class="media"><span class="itag">Operations · 04</span><iframe src="https://drive.google.com/file/d/1u2aciitSdQA11OxwMZ7KZs5sPVkeXNF5/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">04 / Operations</div><div class="ititle">Logistics &amp; Deliveries</div><div class="idesc">Platform combining all deliveries to adjust scheduling — supporting offloading and permitting processes.</div></div></div>
+  </div>
+
+  <!-- DEPT: QUALITY -->
+  <div class="sec" id="s29" data-label="Quality &amp; Handover" data-dept="6">
+    <div class="col-c" style="position:relative;overflow:hidden;"><div class="ghost">QUALITY</div><div class="eyebrow"><span class="el"></span><span class="phrase">Department 06 / 11</span><span class="el"></span></div><div class="mega phrase">Quality &amp;<br/><span class="aq">Handover</span></div><div class="mono" style="margin-top:18px;"><span class="phrase">Ehab Ramzy · Quality Director</span></div></div>
+  </div>
+  <div class="sec" id="s30" data-label="QMS Platform">
+    <div class="ini r"><div class="media"><span class="itag">Quality · 01</span><iframe src="https://drive.google.com/file/d/16BD7n85K3YVujjXByxAzCBjmY5ReJaXk/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">01 / Quality</div><div class="ititle">QMS Digital Platform</div><div class="idesc">Digital workflow for quality — inspections, NCRs and closeouts on one platform, with traceability into handover.</div><div class="metrics"><div class="met"><div class="mk">Cost saving</div><div class="mv">AED 2,400,000</div></div><div class="met"><div class="mk">Time</div><div class="mv">1,600 hrs / yr</div></div></div></div></div>
+  </div>
+  <div class="sec" id="s31" data-label="Handover Platform">
+    <div class="ini"><div class="media"><span class="itag">Quality · 02</span><iframe src="https://drive.google.com/file/d/1cDkGVSM5VGufISPzWEh4UoP0Xz4ZQudX/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">02 / Quality</div><div class="ititle">Handover Digital Platform</div><div class="idesc">From punch-list to handover dossier — fully digital, fully traceable, O&amp;M on day one.</div><div class="metrics"><div class="met"><div class="mk">Cost saving</div><div class="mv">AED 270,000 / yr</div></div><div class="met"><div class="mk">Time</div><div class="mv">480 hrs / yr</div></div></div></div></div>
+  </div>
+
+  <!-- DEPT: TECHNICAL -->
+  <div class="sec" id="s32" data-label="Technical" data-dept="7">
+    <div class="col-c" style="position:relative;overflow:hidden;"><div class="ghost">TECH</div><div class="eyebrow"><span class="el"></span><span class="phrase">Department 07 / 11</span><span class="el"></span></div><div class="mega phrase">Technical</div><div class="mono" style="margin-top:18px;"><span class="phrase">Bassem Bishay · Chief Technical Officer</span></div></div>
+  </div>
+  <div class="sec" id="s33" data-label="Engineering Automation">
+    <div class="ini r"><div class="media"><span class="itag">Technical · 01</span><iframe src="https://drive.google.com/file/d/12ht4nr9S9YFAqFHAwDuzC042Act_Csln/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">01 / Technical</div><div class="ititle">Engineering Automation</div><div class="idesc">Automated shop drawing process — 20% time saved. BIM-driven with site-aware logic.</div><div class="metrics"><div class="met"><div class="mk">Cost saving</div><div class="mv">AED 1,100,000</div></div><div class="met"><div class="mk">Time</div><div class="mv">2,600 hrs / yr</div></div></div></div></div>
+  </div>
+  <div class="sec" id="s34" data-label="BIM Technologies">
+    <div class="ini"><div class="media"><span class="itag">Technical · 02</span><iframe src="https://drive.google.com/file/d/10SiExjExuMQVN3lW6YR3KtOlLZ0kha27/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">02 / Technical</div><div class="ititle">Leveraging BIM Technologies</div><div class="idesc">VR/AR integration with BIM — taking design intent direct to site, walking through buildings before they're built.</div></div></div>
+  </div>
+
+  <!-- DEPT: CONTRACTS + COST -->
+  <div class="sec" id="s35" data-label="Contracts">
+    <div class="ini r"><div class="media"><span class="itag">Contracts · 01</span><img src="https://lh3.googleusercontent.com/d/1x28PexNCjrwQBzSaWUK_l3kYDN2dwohA" alt="AI Contracts"/></div><div class="body-side"><div class="eyebrow" style="margin-bottom:10px;"><span class="el"></span>Dept 08 · Paul D. O'Hagan</div><div class="inum">01 / Contracts</div><div class="ititle">AI Contract Reviews</div><div class="idesc">Risk review and red-flagging — faster and more thorough head &amp; subcontract review with traceable source-mapping.</div></div></div>
+  </div>
+  <div class="sec" id="s36" data-label="Subcontractor Portal">
+    <div class="ini"><div class="media"><span class="itag">Contracts · 02</span><iframe src="https://drive.google.com/file/d/1CD12Dl2C1wxb4RWN4vAQenpHNIZthVla/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">02 / Contracts</div><div class="ititle">Subcontractor Portal</div><div class="idesc">QR-coded signage on site connects directly to current project information, how-to guides and live updates.</div></div></div>
+  </div>
+  <div class="sec" id="s37" data-label="GPS Equipment Tracking">
+    <div class="ini r"><div class="media"><span class="itag">Cost Control · 01</span><iframe src="https://drive.google.com/file/d/1S2uzVM3Nx07IUc0sIQoKY92VHdGr-S0N/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="eyebrow phrase" style="margin-bottom:10px;"><span class="el"></span>Dept 09 · Baiju Chacko</div><div class="inum phrase">01 / Cost Control</div><div class="ititle phrase fs-lg">GPS Equipment Tracking</div><div class="idesc phrase">Monitoring equipment on site for actual working hours — turning utilisation into a managed metric.</div></div></div>
+  </div>
+
+  <!-- DEPT: ESG -->
+  <div class="sec" id="s38" data-label="ESG" data-dept="10">
+    <div class="col-c" style="position:relative;overflow:hidden;"><div class="ghost">ESG</div><div class="eyebrow"><span class="el"></span><span class="phrase">Department 10 / 11</span><span class="el"></span></div><div class="mega phrase">ESG</div><div class="mono" style="margin-top:18px;"><span class="phrase">Samuel Zaki · Deepika Verma · Rabin Mathew</span></div></div>
+  </div>
+  <div class="sec" id="s39" data-label="iEnergy Monitoring">
+    <div class="ini"><div class="media"><span class="itag">ESG · 01</span><iframe src="https://drive.google.com/file/d/1u30xiWj3GKVGho0ovP5KqO6q2ucKPcr1/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">01 / ESG</div><div class="ititle">iEnergy 2.0 Monitoring</div><div class="idesc">Fuel monitoring live at Ghaf Woods — 20% energy reduction, 20% Scope 1 carbon offset.</div><div class="metrics"><div class="met"><div class="mk">Annual saving</div><div class="mv">AED 166,000</div></div><div class="met"><div class="mk">Carbon</div><div class="mv">20% offset · Scope 1</div></div></div></div></div>
+  </div>
+  <div class="sec" id="s40" data-label="Carbon Accounting">
+    <div class="ini r"><div class="media"><span class="itag">ESG · 02</span><iframe src="https://drive.google.com/file/d/1p2LkLj9soR5FOwNX_1O8G79eMFAxG9B5/preview" allow="autoplay;encrypted-media" allowfullscreen></iframe></div><div class="body-side"><div class="inum">02 / ESG</div><div class="ititle">Carbon Accounting</div><div class="idesc">UAE Scope 1, 2 &amp; 3 carbon accounting — implemented with Karbon Wise. Every project, every emission, accounted for.</div></div></div>
+  </div>
+
+  <!-- DEPT: DESIGN -->
+  <div class="sec" id="s41" data-label="Design" data-dept="11">
+    <div class="col-c" style="position:relative;overflow:hidden;"><div class="ghost">DESIGN</div><div class="eyebrow"><span class="el"></span><span class="phrase">Department 11 / 11</span><span class="el"></span></div><div class="mega phrase">Design</div><div class="mono" style="margin-top:18px;"><span class="phrase">Samuel Zaki · Design Director</span></div></div>
+  </div>
+  <div class="sec" id="s42" data-label="3D Printing">
+    <div class="ini"><div class="media"><span class="itag">Design · 01</span><img src="https://lh3.googleusercontent.com/d/1WdrbzFPq2H_-3IoYzXmzr85I97v03ktP" alt="3D Printing"/></div><div class="body-side"><div class="inum">01 / Design</div><div class="ititle">3D Printing</div><div class="idesc">Façade moldings and landscaping elements printed on-site — faster, lower waste, greater design freedom.</div></div></div>
+  </div>
+  <div class="sec" id="s43" data-label="Offsite Construction">
+    <div class="ini r"><div class="media"><span class="itag">Design · 04</span><img src="https://lh3.googleusercontent.com/d/1t-sHyTDfAw01nh9gRVAjuQVoxGJVilOS" alt="Offsite"/></div><div class="body-side"><div class="inum">04 / Design</div><div class="ititle">Offsite Construction Capability</div><div class="idesc">DfMA, precast, modular and offsite manufacturing — 30–40% time saved, high safety yield.</div><div class="metrics"><div class="met"><div class="mk">Time</div><div class="mv">30–40% saved</div></div><div class="met"><div class="mk">Safety</div><div class="mv">High</div></div></div></div></div>
+  </div>
+
+  <!-- SWOT -->
+  <div class="sec" id="s44" data-label="SWOT">
+    <div class="col-l">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">SWOT — Client &amp; Subcontractor Feedback</span></div>
+      <div class="h2 phrase fs-lg">Where we <span class="aq">stand</span>.</div>
+      <div class="swg">
+        <div class="swc phrase"><div class="swt">Strengths</div><ul class="swl"><li>Long-standing relationships</li><li>On-time &amp; reliable payments</li><li>Access to top management</li><li>Strong projects pipeline</li></ul></div>
+        <div class="swc phrase"><div class="swt">Weaknesses</div><ul class="swl"><li>No centralised payment portal</li><li>Delays not passed to subcontractors</li><li>Unclear responsibilities</li></ul></div>
+        <div class="swc a phrase"><div class="swt">Opportunities</div><ul class="swl"><li>Central portal for all</li><li>Sustainable building</li><li>New technologies</li></ul></div>
+        <div class="swc a phrase"><div class="swt">Threats</div><ul class="swl"><li>Quality/Safety risk</li><li>Market fluctuations</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- THANK YOU -->
+  <div class="sec" id="s45" data-label="Thank You">
+    <div class="col-c">
+      <div class="eyebrow"><span class="el"></span><span class="phrase">END · 46 / 46</span><span class="el"></span></div>
+      <div class="mega"><span class="phrase">Thank</span><br/><span class="aq phrase">You</span></div>
+      <div class="turl"><span class="phrase">innovogroup.com</span></div>
+      <div class="tloc"><span class="phrase">DUBAI · ABU DHABI · LONDON · CAIRO</span> <br/> <span class="phrase">SAUDI ARABIA · CANADA · SENEGAL</span></div>
+    </div>
+  </div>
+
+</div><!-- /stage -->
+
+<!-- FIXED UI -->
+<div class="hd">
+  <div class="hdb"><img src="https://drive.google.com/uc?export=view&id=1y5gkjZ3R5D1EIsBCYRnVxengU22XB_N5" alt="Innovo" style="height:22px;filter:brightness(1.1);"></div>
+  <div class="hdr">
+    <span id="secLabel">Cover</span>
+    <div class="hpb"><div class="hpf" id="hpf"></div></div>
+    <span id="secNum">00 / 45</span>
+  </div>
+</div>
+<div class="ft">
+  <div class="ftl">Digital Strategy 2026</div>
+  <div class="ftr" style="display:flex;align-items:center;gap:14px;">
+    <button id="muteBtn" style="background:none;border:1px solid rgba(158,243,238,.2);color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;padding:5px 10px;cursor:pointer;display:none;">MUTE</button>
+    innovogroup.com
+  </div>
+</div>
+
+<script>
+(function(){
+  gsap.registerPlugin(ScrollTrigger);
+  function srand(s){var x=Math.sin(s*12.9898+78.233)*43758.5453;return x-Math.floor(x);}
+
+  // ═══ THREE.JS GPU PARTICLE SYSTEM ═══
+  const cv=document.getElementById('cv');
+  const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setClearColor(0x000000,0);
+  const scene=new THREE.Scene();
+  scene.fog=new THREE.FogExp2(0x080f10,0.035);
+  const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.1,200);
+  camera.position.set(0,3,14);
+  addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
+
+  const COUNT=5000;
+  // ── 6 morph targets on GPU ──
+  function gen(fn){const a=new Float32Array(COUNT*3);for(let i=0;i<COUNT;i++){const p=fn(i);a[i*3]=p[0];a[i*3+1]=p[1];a[i*3+2]=p[2];}return a;}
+
+  const S0=gen(i=>{const phi=Math.acos(-1+(2*i)/COUNT),th=Math.sqrt(COUNT*Math.PI)*phi,r=7+(srand(i*7)-.5)*4;return[r*Math.cos(th)*Math.sin(phi),r*Math.sin(th)*Math.sin(phi)*.6,r*Math.cos(phi)];});
+  const S1=gen(i=>{const c=Math.ceil(Math.sqrt(COUNT)),x=(i%c/c-.5)*16,z=(Math.floor(i/c)/c-.5)*16,y=Math.sin(x*.7)*Math.cos(z*.5)*1.5+Math.sin(x*1.3+z*.8)*.6+srand(i*3)*.3;return[x,y-1,z];});
+  const S2=gen(i=>{const c=Math.ceil(Math.sqrt(COUNT)),x=(i%c/c-.5)*14,z=(Math.floor(i/c)/c-.5)*14,r=Math.sqrt(x*x+z*z),y=Math.max(0,6-r*.9)*(1+srand(i*11)*.12);return[x,y-1.5,z];});
+  const S3=gen(i=>{const c=Math.ceil(Math.sqrt(COUNT)),x=(i%c/c-.5)*14,z=(Math.floor(i/c)/c-.5)*14,r=Math.sqrt(x*x+z*z),y=-Math.max(0,5-r)*(1+srand(i*11)*.15)+Math.sin(r*2)*.5;return[x,y+2,z];});
+  const S4=gen(i=>{const t=(i/COUNT)*Math.PI*12,r=2.8,s=i%2,o=s*Math.PI;return[r*Math.cos(t+o),(i/COUNT-.5)*14,r*Math.sin(t+o)];});
+
+  const shapes=[S0,S1,S2,S3,S4,S0];
+  const camPath=[{x:0,y:3,z:14},{x:2,y:5,z:11},{x:0,y:1.5,z:5},{x:-1,y:-1,z:7},{x:5,y:1,z:5},{x:0,y:3,z:14}];
+
+  // GPU ShaderMaterial
+  const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(COUNT*3);
+  const tgt=new Float32Array(COUNT*3);
+  const rnd=new Float32Array(COUNT);
+  const sizes=new Float32Array(COUNT);
+  for(let i=0;i<COUNT*3;i++){pos[i]=S0[i];tgt[i]=S1[i];}
+  for(let i=0;i<COUNT;i++){rnd[i]=srand(i*17);sizes[i]=srand(i*31)*.8+.2;}
+
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('aTarget',new THREE.BufferAttribute(tgt,3));
+  geo.setAttribute('aRand',new THREE.BufferAttribute(rnd,1));
+  geo.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));
+
+  const mat=new THREE.ShaderMaterial({
+    uniforms:{uMorph:{value:0},uTime:{value:0},uPixelRatio:{value:Math.min(devicePixelRatio,2)},uMouse:{value:new THREE.Vector3(-999,-999,0)}},
+    vertexShader:`
+      attribute vec3 aTarget;
+      attribute float aRand;
+      attribute float aSize;
+      uniform float uMorph;
+      uniform float uTime;
+      uniform float uPixelRatio;
+      uniform vec3 uMouse;
+      varying float vAlpha;
+      varying float vRand;
+      void main(){
+        float t=smoothstep(0.0,1.0,uMorph);
+        vec3 morphed=mix(position,aTarget,t);
+        morphed.x+=sin(uTime*.3+aRand*6.28)*.15*aRand;
+        morphed.y+=cos(uTime*.25+aRand*3.14)*.1*aRand;
+        morphed.z+=sin(uTime*.2+aRand*9.42)*.12*aRand;
+        vec3 worldPos=(modelMatrix*vec4(morphed,1.0)).xyz;
+        float mDist=distance(worldPos,uMouse);
+        if(mDist<3.0){
+          vec3 pushDir=normalize(worldPos-uMouse);
+          float force=(1.0-mDist/3.0)*1.5;
+          morphed+=pushDir*force;
+        }
+        vec4 mv=modelViewMatrix*vec4(morphed,1.0);
+        gl_Position=projectionMatrix*mv;
+        gl_PointSize=aSize*55.0*uPixelRatio/(-mv.z);
+        vAlpha=smoothstep(45.0,2.0,-mv.z)*(.5+aRand*.5);
+        vRand=aRand;
+      }`,
+    fragmentShader:`
+      varying float vAlpha;
+      varying float vRand;
+      void main(){
+        float d=length(gl_PointCoord-vec2(.5));
+        if(d>.5)discard;
+        float glow=1.0-smoothstep(0.0,0.5,d);
+        glow=pow(glow,1.5);
+        vec3 aqua=vec3(.62,.953,.933);
+        vec3 blue=vec3(.125,.541,.682);
+        vec3 col=mix(blue,aqua,vRand);
+        gl_FragColor=vec4(col,glow*vAlpha);
+      }`,
+    transparent:true,blending:THREE.AdditiveBlending,depthWrite:false
+  });
+  const pts=new THREE.Points(geo,mat);
+  scene.add(pts);
+
+  let mx=.5,my=.5;
+  const raycaster=new THREE.Raycaster();
+  const mouseNDC=new THREE.Vector2();
+  const mousePlane=new THREE.Plane(new THREE.Vector3(0,0,1),0);
+  const mouseWorld=new THREE.Vector3();
+  addEventListener('mousemove',e=>{
+    mx=e.clientX/innerWidth;my=e.clientY/innerHeight;
+    mouseNDC.x=(e.clientX/innerWidth)*2-1;
+    mouseNDC.y=-(e.clientY/innerHeight)*2+1;
+    raycaster.setFromCamera(mouseNDC,camera);
+    raycaster.ray.intersectPlane(mousePlane,mouseWorld);
+    mat.uniforms.uMouse.value.copy(mouseWorld);
+  },{passive:true});
+
+  // ═══ GSAP SCROLL ENGINE ═══
+  const secs=[...document.querySelectorAll('.sec')];
+  const N=secs.length;
+  const VH=innerHeight;
+  const SCROLL_PER_SEC=VH*1.4;
+  const TOTAL=SCROLL_PER_SEC*N+VH;
+  document.body.style.height=TOTAL+'px';
+
+  const hpf=document.getElementById('hpf');
+  const secLabel=document.getElementById('secLabel');
+  const secNum=document.getElementById('secNum');
+  function pad(n,t){return String(n).padStart(2,'0')+' / '+String(t).padStart(2,'0');}
+
+  // Morph state management
+  let morphState={from:0,to:1,t:0};
+  function setMorphTargets(fromIdx,toIdx){
+    const p=geo.attributes.position.array;
+    const a=geo.attributes.aTarget.array;
+    for(let i=0;i<COUNT*3;i++){p[i]=shapes[fromIdx][i];a[i]=shapes[toIdx][i];}
+    geo.attributes.position.needsUpdate=true;
+    geo.attributes.aTarget.needsUpdate=true;
+  }
+
+  // GSAP ScrollTrigger for particle morphing
+  const tl=gsap.timeline({
+    scrollTrigger:{trigger:'body',start:'top top',end:'bottom bottom',scrub:1.5}
+  });
+  const ns=shapes.length-1;
+  for(let i=0;i<ns;i++){
+    tl.to(morphState,{t:1,duration:1,ease:'none',
+      onStart:()=>{morphState.from=i;morphState.to=i+1;setMorphTargets(i,i+1);morphState.t=0;},
+      onUpdate:()=>{mat.uniforms.uMorph.value=morphState.t;}
+    });
+    if(i<ns-1) tl.set(morphState,{t:0});
+  }
+
+  function easeIO(t){t=Math.max(0,Math.min(1,t));return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+  function lerp(a,b,t){return a+(b-a)*t;}
+
+  let smoothS=0;
+  function tick(time){
+    smoothS+=(scrollY-smoothS)*.06;
+    const s=smoothS;
+    mat.uniforms.uTime.value=time*.001;
+
+    // Camera path
+    const prog=Math.min(1,s/(TOTAL-VH));
+    const sf=prog*(camPath.length-1);
+    const si=Math.min(Math.floor(sf),camPath.length-2);
+    const ct=easeIO(sf-si);
+    const cA=camPath[si],cB=camPath[si+1];
+    camera.position.x=lerp(cA.x,cB.x,ct)+(mx-.5)*2.5;
+    camera.position.y=lerp(cA.y,cB.y,ct)+(my-.5)*1.2;
+    camera.position.z=lerp(cA.z,cB.z,ct);
+    camera.lookAt(0,0,0);
+
+    pts.rotation.y=prog*Math.PI*3;
+    pts.rotation.x=Math.sin(prog*Math.PI*2)*.12;
+
+    // HUD
+    hpf.style.width=(prog*100)+'%';
+    const ai=Math.min(N-1,Math.floor(s/SCROLL_PER_SEC));
+    secLabel.textContent=secs[ai]?.dataset.label||'';
+    secNum.textContent=pad(ai,N-1);
+
+    // Sections
+    secs.forEach((sec,i)=>{
+      const sC=i*SCROLL_PER_SEC+SCROLL_PER_SEC*.5;
+      const off=(s-sC)/VH;
+      const dist=Math.abs(off);
+      const fS=.25,fE=.85;
+      let op;if(dist<=fS)op=1;else if(dist>=fE)op=0;else op=easeIO(1-(dist-fS)/(fE-fS));
+      const sc=1-Math.min(.04,dist*.05);
+      sec.style.transform=`translateY(${off*18}px) scale(${sc})`;
+      sec.style.opacity=op;
+      sec.style.visibility=op<.005?'hidden':'visible';
+      const phs=sec.querySelectorAll('.phrase');
+      phs.forEach((ph,pi)=>{const d=Math.max(0,dist-pi*.04);let po;if(d<=fS)po=1;else if(d>=fE)po=0;else po=easeIO(1-(d-fS)/(fE-fS));ph.style.opacity=po;ph.style.transform=`translateY(${d*15}px)`;});
+      const g=sec.querySelector('.ghost');if(g)g.style.transform=`translateY(${-off*35}px)`;
+      sec.querySelectorAll('.media').forEach(el=>{el.style.transform=`translateY(${off*15}px)`;});
+    });
+
+    renderer.render(scene,camera);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // ── Loader + Audio ──
+  const ldr=document.getElementById('ldr'),eb=document.getElementById('eb'),ebMusic=document.getElementById('ebMusic');
+  const bgMusic=document.getElementById('bgMusic');
+  const muteBtn=document.getElementById('muteBtn');
+  function dismiss(withMusic){
+    if(ldr.classList.contains('gone'))return;
+    ldr.classList.add('gone');
+    if(withMusic&&bgMusic){bgMusic.volume=0.3;bgMusic.play().catch(()=>{});muteBtn.style.display='inline-block';}
+    setTimeout(()=>{if(ldr.parentNode)ldr.remove();},1000);
+  }
+  ebMusic.addEventListener('click',()=>dismiss(true));
+  eb.addEventListener('click',()=>dismiss(false));
+  muteBtn.addEventListener('click',()=>{bgMusic.muted=!bgMusic.muted;muteBtn.textContent=bgMusic.muted?'UNMUTE':'MUTE';});
+
+  // ── Animated Number Counters ──
+  const counters=new Map();
+  function animateCounters(){
+    document.querySelectorAll('.sn,.b3n,.mv').forEach(el=>{if(counters.has(el))return;const t=el.textContent.trim(),m=t.match(/([\d,]+)/);if(!m)return;const n=parseInt(m[1].replace(/,/g,''));if(isNaN(n)||n>100000)return;const p=el.closest('.sec');if(!p)return;counters.set(el,{target:n,prefix:t.slice(0,t.indexOf(m[1])),suffix:t.slice(t.indexOf(m[1])+m[1].length),parent:p,done:false});});
+    counters.forEach((d,el)=>{if(d.done)return;if((parseFloat(d.parent.style.opacity)||0)>.8){d.done=true;const t0=performance.now();(function step(now){const p=Math.min(1,(now-t0)/1200),v=Math.round((1-Math.pow(1-p,3))*d.target);el.textContent=d.prefix+v.toLocaleString()+d.suffix;if(p<1)requestAnimationFrame(step);})(t0);}});
+  }
+  setInterval(animateCounters,200);
+})();
+</script>
+</body>
+</html>
